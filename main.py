@@ -16,10 +16,26 @@ import csv
 # required for working with csv files globally
 csv_files = []
 master_fields = []
-master_rows = []
+all_spreadsheets = []
 
-all_spreadsheets = [[]]
+city_dict = {}
 
+def merge_data(fields, rows):
+    # for every column in current spreadsheet
+    for field_num in range(len(fields)):
+        col_name = fields[field_num]
+        col_num = 0
+        # iterate across the set of master_columns in master_fields, find which column corresponds to which master column
+        for i in range(len(master_fields)):
+            if col_name == master_fields[i]:
+                col_num = i               
+                break
+        for row in rows:
+            all_spreadsheets[i].append(row[field_num])
+
+def categorize_by_city(list_of_lists):
+    #make each key a city.
+    1 + 1
 
 class FileChoose(Button):
     '''
@@ -62,17 +78,40 @@ class Process(Button):
         for file in csv_files:
             loc = file[2:-2] # removes the first/last two characters from ['filename.extension'] to filename.extension
 
+            fields = []
+            rows = []
+
             with open(loc, 'r') as csvfile:
                 # creating a csv reader object 
                 csvreader = csv.reader(csvfile)
+
+                fields = next(csvreader)
             
                 # extracting each data row one by one
                 for row in csvreader:
                     rows.append(row)
-            
+
+                # for row in rows:
+                #     print(row)
+                    # i = 0
+                    # for entry in row:
+                    #     all_spreadsheets[i].append(entry)
+                    #     i = i + 1
+
+                # Some spreadsheets may have a limited number of columns. Insert specifically.
+                merge_data(fields, rows)
+        # end of input files loop
+
+        # Separate the data into dictionary based on city.
+        # categorize_by_city()
+
                 # get total number of rows
-                print("Total no. of rows: %d"%(csvreader.line_num))
-                print('Field names are:' + ', '.join(field for field in master_fields))
+                print("Total no. of rows: %d"%(len(all_spreadsheets[0])))
+
+        to_dict(all_spreadsheets)
+
+###### add some sort of toast ###############
+        exit()
 
 
 class ChooserApp(App):
@@ -111,6 +150,9 @@ if __name__ == '__main__':
         # extracting field names through first row of the master columns sample.
         master_fields = next(csvreader)
         # print('Field names are:' + ', '.join(field for field in master_fields))
+        
+        for fields in master_fields:
+            all_spreadsheets.append([fields])
 
     # run kivy app
     ChooserApp().run()
