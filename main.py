@@ -15,8 +15,10 @@ import csv
 
 # required for working with csv files globally
 csv_files = []
-fields = []
-rows = []
+master_fields = []
+master_rows = []
+
+all_spreadsheets = [[]]
 
 
 class FileChoose(Button):
@@ -63,9 +65,6 @@ class Process(Button):
             with open(loc, 'r') as csvfile:
                 # creating a csv reader object 
                 csvreader = csv.reader(csvfile)
-                
-                # extracting field names through first row
-                fields = next(csvreader)
             
                 # extracting each data row one by one
                 for row in csvreader:
@@ -73,6 +72,7 @@ class Process(Button):
             
                 # get total number of rows
                 print("Total no. of rows: %d"%(csvreader.line_num))
+                print('Field names are:' + ', '.join(field for field in master_fields))
 
 
 class ChooserApp(App):
@@ -89,7 +89,7 @@ class ChooserApp(App):
             BoxLayout:
                 orientation: 'vertical'
                 Label:
-                    size_hint_y: 0.2
+                    size_hint_y: 0.05
                     text: 'First, please select the files you wish to process. Then hit the process button.'
                 Process:
                     size_hint_y: 0.1
@@ -103,4 +103,14 @@ class ChooserApp(App):
 
 
 if __name__ == '__main__':
+    # set up master_fields to get total fields sample. Assumes master sample is in same directory as executable.
+    with open('CSV-All-Columns-Sample.csv', 'r') as csvfile:
+        # creating a csv reader object 
+        csvreader = csv.reader(csvfile)
+
+        # extracting field names through first row of the master columns sample.
+        master_fields = next(csvreader)
+        # print('Field names are:' + ', '.join(field for field in master_fields))
+
+    # run kivy app
     ChooserApp().run()
