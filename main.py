@@ -33,9 +33,13 @@ def merge_data(fields, rows):
         for row in rows:
             all_spreadsheets[i].append(row[field_num])
 
-def categorize_by_city(list_of_lists):
-    #make each key a city.
-    1 + 1
+def categorize_by_column(name):
+    # Determine column number of "column_name" for sorting.
+    col = 0
+    for col_num in range(len(master_fields)):
+        if name == master_fields[col_num]:
+            col = col_num
+            break
 
 class FileChoose(Button):
     '''
@@ -91,24 +95,17 @@ class Process(Button):
                 for row in csvreader:
                     rows.append(row)
 
-                # for row in rows:
-                #     print(row)
-                    # i = 0
-                    # for entry in row:
-                    #     all_spreadsheets[i].append(entry)
-                    #     i = i + 1
-
                 # Some spreadsheets may have a limited number of columns. Insert specifically.
                 merge_data(fields, rows)
         # end of input files loop
 
-        # Separate the data into dictionary based on city.
-        # categorize_by_city()
+        # Separate the data into dictionary based on city (which happens to be in the State/Region column instead of City).
+        categorize_by_column("State/Region")
 
         # get total number of rows
         print("Total no. of rows: %d"%(len(all_spreadsheets[0])))
 
-###### add some sort of toast ###############
+########## add some sort of toast ###############
         exit()
 
 
