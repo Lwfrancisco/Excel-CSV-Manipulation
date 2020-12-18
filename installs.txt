@@ -1,1 +1,3 @@
 pip install plyer
+
+python -m PyInstaller CSV_Manipulator.spec

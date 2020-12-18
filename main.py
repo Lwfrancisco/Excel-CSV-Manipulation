@@ -1,5 +1,11 @@
 # #!/usr/bin/python3
 
+# for Windows App Packaging
+import os, sys
+os.environ['KIVY_GL_BACKEND'] = 'angle_sdl2'
+from kivy.resources import resource_add_path, resource_find
+from kivy_deps import sdl2, glew
+
 from textwrap import dedent
 
 from plyer import filechooser
@@ -66,6 +72,10 @@ def categorize_by_column(name, fallback_name):
 
     # print(sorting_dict)
 
+
+    def output_csv_by_1stCategory():
+        pass
+
 class FileChoose(Button):
     '''
     Button that triggers 'filechooser.open_file()' and processes
@@ -127,6 +137,9 @@ class Process(Button):
         # Separate the data into dictionary based on city (which happens to be in the State/Region column instead of City).
         categorize_by_column("State/Region", "City")
 
+        # Output CSVs
+        output_csv_by_1stCategory()
+
         # get total number of rows
         print("Total no. of rows: %d"%(len(all_spreadsheets[0])))
 
@@ -162,6 +175,10 @@ class ChooserApp(App):
 
 
 if __name__ == '__main__':
+    # for bundling data with this kivy app for windows
+    if hasattr(sys, '_MEIPASS'):
+        resource_add_path(os.path.join(sys._MEIPASS))
+
     # set up master_fields to get total fields sample. Assumes master sample is in same directory as executable.
     with open('CSV-All-Columns-Sample.csv', 'r') as csvfile:
         # creating a csv reader object 
