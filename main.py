@@ -18,7 +18,7 @@ csv_files = []
 master_fields = []
 all_spreadsheets = []
 
-city_dict = {}
+sorting_dict = {}
 
 def merge_data(fields, rows):
     # for every column in current spreadsheet
@@ -35,11 +35,20 @@ def merge_data(fields, rows):
 
 def categorize_by_column(name):
     # Determine column number of "column_name" for sorting.
-    col = 0
+    sort_col = 0
     for col_num in range(len(master_fields)):
         if name == master_fields[col_num]:
-            col = col_num
-            break
+            sort_col = col_num
+    
+    for sort_val in set(all_spreadsheets[sort_col][1:]):
+        sorting_dict[sort_val] = []
+    
+    for row_num in range(len(all_spreadsheets[0]) - 1):
+        if row_num == 0: # skip first row - it only has column names
+            continue
+        sorting_dict[all_spreadsheets[sort_col][row_num]].append(row_num)
+
+    # print(sorting_dict)
 
 class FileChoose(Button):
     '''
