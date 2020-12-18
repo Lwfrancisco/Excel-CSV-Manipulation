@@ -27,17 +27,25 @@ all_spreadsheets = []
 sorting_dict = {}
 
 def merge_data(fields, rows):
-    # for every column in current spreadsheet
-    for field_num in range(len(fields)):
-        col_name = fields[field_num]
-        col_num = 0
-        # iterate across the set of master_columns in master_fields, find which column corresponds to which master column
-        for i in range(len(master_fields)):
-            if col_name == master_fields[i]:
-                col_num = i               
+
+    row_count = len(rows[0]) # get total rows in current sheet
+    # for every column in master sheet
+    for m_field_num in range(len(master_fields)):
+        m_field = master_fields[m_field_num]
+        col_num = -1 # column translation between master_fields and fields from current sheet. Set to -1 to indicate no field was found.
+        # Match column in master with column in current sheet
+        for field_num in range(len(fields)):
+            if m_field == fields[field_num]:
+                col_num = field_num # assign correct translation column
                 break
-        for row in rows:
-            all_spreadsheets[i].append(row[field_num])
+        # if match was found, append all rows in column.
+        if col_num >= 0:
+            for row in rows:
+                all_spreadsheets[m_field_num].append(row[col_num])
+        # if match was not found, append empty strings.
+        elif col_num < 0:
+            for x in range(row_count):
+                all_spreadsheets[m_field_num].append('')
 
 def categorize_by_column(name, fallback_name):
     # Determine column number of "column_name" for sorting.
@@ -72,9 +80,42 @@ def categorize_by_column(name, fallback_name):
 
     # print(sorting_dict)
 
+def ret_lol(row_list):
+    # ret_list = []
+    # for x in row_list:
+    #     for y in range(len(master_fields)):
+    #         print(y)
+    #         print(all_spreadsheets[y][x])
+    # print(ret_list)
 
-    def output_csv_by_1stCategory():
-        pass
+
+def output_csv_by_1stCategory():
+
+    cat_list = []
+
+    # Determine column number of "1stCategory" for sorting.
+    firstCat_col = 0
+    for col_num in range(len(master_fields)):
+        if '1st Category' == master_fields[col_num]:
+            firstCat_col = col_num
+    
+    keys = sorting_dict.keys()
+    for key in keys:
+        cat_list.append(sorting_dict[key])
+        # new_list = [x for x in cat_list if firstCat_col == ]
+
+    # Create a dictionary for every city using 1stCat as the key.
+    cat_dict = {}
+    for sort_dict_rowval in cat_list[9]:
+        key_val = all_spreadsheets[firstCat_col][sort_dict_rowval]
+        if key_val not in cat_dict:
+            cat_dict[key_val] = []
+        cat_dict[key_val].append(sort_dict_rowval)
+    for keys in cat_dict:
+        # print(cat_dict[keys])
+        ret_lol(cat_dict[keys])
+
+
 
 class FileChoose(Button):
     '''
@@ -138,7 +179,8 @@ class Process(Button):
         categorize_by_column("State/Region", "City")
 
         # Output CSVs
-        output_csv_by_1stCategory()
+        # output_csv_by_1stCategory()
+        ret_lol([1])
 
         # get total number of rows
         print("Total no. of rows: %d"%(len(all_spreadsheets[0])))
