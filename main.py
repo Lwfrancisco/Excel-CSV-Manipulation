@@ -33,20 +33,36 @@ def merge_data(fields, rows):
         for row in rows:
             all_spreadsheets[i].append(row[field_num])
 
-def categorize_by_column(name):
+def categorize_by_column(name, fallback_name):
     # Determine column number of "column_name" for sorting.
     sort_col = 0
+    fallback_sort_col = 0
     for col_num in range(len(master_fields)):
         if name == master_fields[col_num]:
             sort_col = col_num
+        elif fallback_name == master_fields[col_num]:
+            fallback_sort_col = col_num
     
+    # Primary sort columns
     for sort_val in set(all_spreadsheets[sort_col][1:]):
         sorting_dict[sort_val] = []
     
     for row_num in range(len(all_spreadsheets[0]) - 1):
+        sort_data = all_spreadsheets[sort_col][row_num]
+
         if row_num == 0: # skip first row - it only has column names
             continue
-        sorting_dict[all_spreadsheets[sort_col][row_num]].append(row_num)
+        # trigger fallback sort column if no data exists for primary sort column.
+        elif sort_data == '':
+            fallback_sort_data = all_spreadsheets[fallback_sort_col][row_num]
+            # print(fallback_sort_data)
+            # if fallback sort column is not yet in the sorting dictionary, add it as a key.
+            if(fallback_sort_data not in sorting_dict):
+                sorting_dict[fallback_sort_data] = []
+            sorting_dict[fallback_sort_data].append(row_num)
+            continue
+
+        sorting_dict[sort_data].append(row_num)
 
     # print(sorting_dict)
 
@@ -109,7 +125,7 @@ class Process(Button):
         # end of input files loop
 
         # Separate the data into dictionary based on city (which happens to be in the State/Region column instead of City).
-        categorize_by_column("State/Region")
+        categorize_by_column("State/Region", "City")
 
         # get total number of rows
         print("Total no. of rows: %d"%(len(all_spreadsheets[0])))
