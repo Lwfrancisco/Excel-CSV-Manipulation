@@ -1,51 +1,70 @@
-#!/usr/bin/python3
+# #!/usr/bin/python3
 
-import kivy
+from textwrap import dedent
+
+from plyer import filechooser
+
 from kivy.app import App
 from kivy.lang import Builder
-from kivy.uix.boxlayout import BoxLayout
-from kivy.properties import ObjectProperty
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.widget import Widget
+from kivy.properties import ListProperty
+from kivy.uix.button import Button
+from kivy.uix.label import Label
 
-kivy.require('1.10.0')
+csv_files = []
 
-class RootWidget(BoxLayout):
-    '''Create a controller that receives a custom widget from the kv lang file.
-    Add an action to be called from a kv file.
+
+class FileChoose(Button):
+    '''
+    Button that triggers 'filechooser.open_file()' and processes
+    the data response from filechooser Activity.
     '''
 
-    container = ObjectProperty(None)
+    selection = ListProperty([])
 
-class CSV_Manipulation(App):
-    '''This is the app itself'''
+    def choose(self):
+        '''
+        Call plyer filechooser API to run a filechooser Activity.
+        '''
+        filechooser.open_file(on_selection=self.handle_selection)
+
+    def handle_selection(self, selection):
+        '''
+        Callback function for handling the selection response from Activity.
+        '''
+        self.selection = selection
+
+    def on_selection(self, *a, **k):
+        '''
+        Update TextInput.text after FileChoose.selection is changed
+        via FileChoose.handle_selection.
+        '''
+        # App.get_running_app().root.ids.result.text = str(self.selection)
+        App.get_running_app().root.add_widget(Label(text=str(self.selection), size_hint_y=str(0.05)))
+        csv_files.append(str(self.selection))
+
+
+class ChooserApp(App):
+    '''
+    Application class with root built in KV.
+    '''
 
     def build(self):
-        '''This method loads the root.kv file automatically
-        :return: none
-        '''
-        # loading the content of root.kv
-        self.root = Builder.load_file('kv_modes/root.kv')
-
-    def screen_select(self, selector):
-        '''
-        :param selector: character that is dependant on which mode button is toggled.
-        :return:
-        '''
-
-        filename = selector + '.kv'
-        # unload the content of the .kv file
-        # reason: may have data from previous calls
-        Builder.unload_file('kv_modes/' + filename)
-        # clear the container
-        self.root.container.clear_widgets()
-        # load the .kv file
-        selector = Builder.load_file('kv_modes/' + filename)
-        # add content of the .kv file to the container
-        self.root.container.add_widget(selector)
+        return Builder.load_string(dedent('''
+            <FileChoose>:
+            # BoxLayout:
+            #     BoxLayout:
+            #         orientation: 'vertical'
+            BoxLayout:
+                orientation: 'vertical'
+                Label:
+                    size_hint_y: 0.2
+                    text: 'First, please select the files you wish to process. Then hit the process button.'
+                FileChoose:
+                    size_hint_y: 0.1
+                    on_release: self.choose()
+                    text: 'Select a file'
+        '''))
 
 
 if __name__ == '__main__':
-    '''Start the application'''
-
-    CSV_Manipulation().run()
+    ChooserApp().run()
