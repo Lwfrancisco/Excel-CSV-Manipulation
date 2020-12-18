@@ -58,22 +58,21 @@ class Process(Button):
 
         # reading csv file 
         for file in csv_files:
-            loc = file[1:-1] # removes the first/last characters from [filename.extension] to filename.extension
-            print(loc)
+            loc = file[2:-2] # removes the first/last two characters from ['filename.extension'] to filename.extension
 
-            # with open(loc, 'r') as csvfile:
-            #     # creating a csv reader object 
-            #     csvreader = csv.reader(csvfile)
+            with open(loc, 'r') as csvfile:
+                # creating a csv reader object 
+                csvreader = csv.reader(csvfile)
                 
-            #     # extracting field names through first row
-            #     fields = next(csvreader)
+                # extracting field names through first row
+                fields = next(csvreader)
             
-            #     # extracting each data row one by one
-            #     for row in csvreader:
-            #         rows.append(row)
+                # extracting each data row one by one
+                for row in csvreader:
+                    rows.append(row)
             
-            #     # get total number of rows
-            #     print("Total no. of rows: %d"%(csvreader.line_num))
+                # get total number of rows
+                print("Total no. of rows: %d"%(csvreader.line_num))
 
 
 class ChooserApp(App):
