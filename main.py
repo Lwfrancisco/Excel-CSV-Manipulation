@@ -105,10 +105,8 @@ class Process(Button):
         # Separate the data into dictionary based on city.
         # categorize_by_city()
 
-                # get total number of rows
-                print("Total no. of rows: %d"%(len(all_spreadsheets[0])))
-
-        to_dict(all_spreadsheets)
+        # get total number of rows
+        print("Total no. of rows: %d"%(len(all_spreadsheets[0])))
 
 ###### add some sort of toast ###############
         exit()
