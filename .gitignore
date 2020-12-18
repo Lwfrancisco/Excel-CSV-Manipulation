@@ -128,3 +128,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .vscode/settings.json
+CSV-Sample.csv
+CSV-All-Collumns-Sample.csv

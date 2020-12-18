@@ -42,6 +42,14 @@ class FileChoose(Button):
         App.get_running_app().root.add_widget(Label(text=str(self.selection), size_hint_y=str(0.05)))
         csv_files.append(str(self.selection))
 
+class Process(Button):
+    '''
+    Button that triggers the processing of selected csv files.
+    '''
+
+    def process(self):
+        print(csv_files)
+
 
 class ChooserApp(App):
     '''
@@ -59,6 +67,10 @@ class ChooserApp(App):
                 Label:
                     size_hint_y: 0.2
                     text: 'First, please select the files you wish to process. Then hit the process button.'
+                Process:
+                    size_hint_y: 0.1
+                    text: 'Process'
+                    on_release: self.process()
                 FileChoose:
                     size_hint_y: 0.1
                     on_release: self.choose()
