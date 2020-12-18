@@ -10,7 +10,13 @@ from kivy.properties import ListProperty
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 
+# for csv
+import csv
+
+# required for working with csv files globally
 csv_files = []
+fields = []
+rows = []
 
 
 class FileChoose(Button):
@@ -48,7 +54,26 @@ class Process(Button):
     '''
 
     def process(self):
-        print(csv_files)
+        # print(csv_files)
+
+        # reading csv file 
+        for file in csv_files:
+            loc = file[1:-1] # removes the first/last characters from [filename.extension] to filename.extension
+            print(loc)
+
+            # with open(loc, 'r') as csvfile:
+            #     # creating a csv reader object 
+            #     csvreader = csv.reader(csvfile)
+                
+            #     # extracting field names through first row
+            #     fields = next(csvreader)
+            
+            #     # extracting each data row one by one
+            #     for row in csvreader:
+            #         rows.append(row)
+            
+            #     # get total number of rows
+            #     print("Total no. of rows: %d"%(csvreader.line_num))
 
 
 class ChooserApp(App):
