@@ -93,8 +93,8 @@ def categorize_by_column(name, fallback_name):
 def ret_lol(row_num_list):
     # print(row_num_list)
     ret_list = []
-    row = []
     for x in row_num_list:
+        row = []
         for y in range(len(master_fields)):
             row.append(all_spreadsheets[y][x])
         ret_list.append(row)
@@ -132,9 +132,13 @@ def output_csv_by_1stCategory():
     for keys in cat_dict:
         # print(cat_dict[keys])
         csv_lol = ret_lol(cat_dict[keys]) # fetch row data for each profession, return a list of rows.
+        profession = csv_lol[0][firstCat_col]
+        profession_count = str(f'{len(csv_lol):03d}')
         #write csv file
         print(csv_lol)
-        print('######################################')
+        print(profession)
+        print(profession_count)
+        print('##############################################################')
 
 
 
