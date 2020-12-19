@@ -26,7 +26,8 @@ all_spreadsheets = []
 
 sorting_dict = {}
 
-output_dir = "output\\"
+desktop = os.path.expanduser("~/Desktop")
+output_dir = "CSV_Manipulator_Output"
 
 def merge_data(fields, rows):
 
@@ -104,8 +105,11 @@ def ret_lol(row_num_list):
     return ret_list
 
 def write_to_csv(filename, rows):
+    directory = os.path.join(desktop, output_dir)
+    filepath = os.path.join(directory, filename)
+
     # writing to csv file 
-    with open(filename, 'w', newline='') as csvfile:
+    with open(filepath, 'w', newline='') as csvfile:
         # creating a csv writer object 
         csvwriter = csv.writer(csvfile) 
         
@@ -135,28 +139,30 @@ def output_csv_by_1stCategory():
     #for every city in cat_list
     cat_dict = {}
     # for all rows in each city
-    for sort_dict_rowval in cat_list[9]:
-        key_val = all_spreadsheets[firstCat_col][sort_dict_rowval] # fetch a profession in cat_list
-        # if profession is not in cat_dict, add it.
-        if key_val not in cat_dict:
-            cat_dict[key_val] = []
-        # Add row number to a city's profession dictionary key (e.g. if Detroit has a Carpenter, add which row it can be found on)
-        cat_dict[key_val].append(sort_dict_rowval)
-    # for all professions in the city
-    for keys in cat_dict:
-        # print(cat_dict[keys])
-        csv_lol = ret_lol(cat_dict[keys]) # fetch row data for each profession, return a list of rows.
-        profession = csv_lol[0][firstCat_col]
-        profession_count = str(f'{(len(csv_lol)):03d}')
-        profession_city = csv_lol[0][4] # Extracts city from State/Region column. magic number - will fix later
-        # print(csv_lol)
-        # print(profession)
-        # print(profession_count)
-        # print(profession_city)
-        filename = output_dir + profession + ' ' + profession_city + ' ' + profession_count + '.csv'
-        print(filename)
-        write_to_csv(filename, csv_lol)
-        print('##############################################################')
+    for city_row in cat_list:
+        for sort_dict_rowval in city_row:
+            key_val = all_spreadsheets[firstCat_col][sort_dict_rowval] # fetch a profession in cat_list
+            # if profession is not in cat_dict, add it.
+            if key_val not in cat_dict:
+                cat_dict[key_val] = []
+            # Add row number to a city's profession dictionary key (e.g. if Detroit has a Carpenter, add which row it can be found on)
+            cat_dict[key_val].append(sort_dict_rowval)
+        # for all professions in the city
+        for keys in cat_dict:
+            # print(cat_dict[keys])
+            csv_lol = ret_lol(cat_dict[keys]) # fetch row data for each profession, return a list of rows.
+            profession = csv_lol[0][firstCat_col]
+            profession_count = str(f'{(len(csv_lol)):03d}')
+            profession_city = csv_lol[0][4] # Extracts city from State/Region column. magic number - will fix later
+            if profession_city == '':
+                profession_city = csv_lol[0][3]
+
+            # print(csv_lol)
+            # print(profession)
+            # print(profession_count)
+            # print(profession_city)
+            filename = profession + ' ' + profession_city + ' ' + profession_count + '.csv'
+            write_to_csv(filename, csv_lol)
 
 
 
@@ -263,6 +269,10 @@ if __name__ == '__main__':
     # for bundling data with this kivy app for windows
     if hasattr(sys, '_MEIPASS'):
         resource_add_path(os.path.join(sys._MEIPASS))
+
+    path = os.path.join(desktop, output_dir) 
+    if not os.path.isdir(path):
+        os.mkdir(path)
 
     # set up master_fields to get total fields sample. Assumes master sample is in same directory as executable.
     with open('CSV-All-Columns-Sample.csv', 'r') as csvfile:
