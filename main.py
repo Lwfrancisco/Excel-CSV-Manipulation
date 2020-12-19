@@ -27,7 +27,7 @@ all_spreadsheets = []
 sorting_dict = {}
 
 desktop = os.path.expanduser("~/Desktop")
-output_dir = "CSV_Manipulator_Output"
+output_dir = "CSV_Manipulator"
 
 def merge_data(fields, rows):
 
@@ -50,11 +50,6 @@ def merge_data(fields, rows):
             for x in range(row_count):
                 all_spreadsheets[m_field_num].append('')
 
-    # temp_list = []
-    # temp_list.append(master_fields)
-    # for m_col in range(len(master_fields)):
-    #     col_num
-
     
     # print(len(all_spreadsheets))
 
@@ -69,27 +64,22 @@ def categorize_by_column(name, fallback_name):
             sort_col = col_num
         elif fallback_name == master_fields[col_num]:
             fallback_sort_col = col_num
-    
-    # Primary sort columns
-    for sort_val in set(all_spreadsheets[sort_col][1:]):
-        sorting_dict[sort_val] = []
-    
-    for row_num in range(len(all_spreadsheets[0]) - 1):
-        sort_data = all_spreadsheets[sort_col][row_num]
 
-        if row_num == 0: # skip first row - it only has column names
-            continue
-        # trigger fallback sort column if no data exists for primary sort column.
-        elif sort_data == '':
-            fallback_sort_data = all_spreadsheets[fallback_sort_col][row_num]
-            # print(fallback_sort_data)
-            # if fallback sort column is not yet in the sorting dictionary, add it as a key.
-            if(fallback_sort_data not in sorting_dict):
-                sorting_dict[fallback_sort_data] = []
-            sorting_dict[fallback_sort_data].append(row_num)
-            continue
+    # For all rows, check if primary sort_col contains a key in the dictionary.
+    for sort_val_row in range(len(all_spreadsheets[sort_col])):
+        sort_val = all_spreadsheets[sort_col][sort_val_row]
 
-        sorting_dict[sort_data].append(row_num)
+        if sort_val_row == 0: # header row
+            continue
+        if sort_val == '': # empty entry in primary sort column
+            sort_val = all_spreadsheets[fallback_sort_col][sort_val_row] # revert to fallback
+
+        # Place new sort_vals in dictionary
+        if sort_val not in sorting_dict:
+            sorting_dict[sort_val] = []
+
+        # Add row to dictionary under proper key.
+        sorting_dict[sort_val].append(sort_val_row)
 
     # print(sorting_dict)
 
@@ -135,18 +125,17 @@ def output_csv_by_1stCategory():
     for key in keys:
         cat_list.append(sorting_dict[key])
 
-    # Create a dictionary for every city using 1stCat as the key.
-    #for every city in cat_list
-    cat_dict = {}
     # for all rows in each city
     for city_row in cat_list:
-        for sort_dict_rowval in city_row:
-            key_val = all_spreadsheets[firstCat_col][sort_dict_rowval] # fetch a profession in cat_list
+        # Create a dictionary for every city using 1stCat as the key.
+        cat_dict = {}
+        for every_city in city_row:
+            key_val = all_spreadsheets[firstCat_col][every_city] # fetch a profession in cat_list
             # if profession is not in cat_dict, add it.
             if key_val not in cat_dict:
                 cat_dict[key_val] = []
             # Add row number to a city's profession dictionary key (e.g. if Detroit has a Carpenter, add which row it can be found on)
-            cat_dict[key_val].append(sort_dict_rowval)
+            cat_dict[key_val].append(every_city)
         # for all professions in the city
         for keys in cat_dict:
             # print(cat_dict[keys])
@@ -154,7 +143,7 @@ def output_csv_by_1stCategory():
             profession = csv_lol[0][firstCat_col]
             profession_count = str(f'{(len(csv_lol)):03d}')
             profession_city = csv_lol[0][4] # Extracts city from State/Region column. magic number - will fix later
-            if profession_city == '':
+            if len(profession_city) < 3:
                 profession_city = csv_lol[0][3]
 
             # print(csv_lol)
@@ -253,7 +242,7 @@ class ChooserApp(App):
                 orientation: 'vertical'
                 Label:
                     size_hint_y: 0.05
-                    text: 'First, please select the files you wish to process. Then hit the process button.'
+                    text: 'First, please select the files you wish to process. Then hit the process button. Files will be stored in Desktop/CSV_Manipulator'
                 Process:
                     size_hint_y: 0.1
                     text: 'Process'
