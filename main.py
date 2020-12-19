@@ -93,16 +93,18 @@ def categorize_by_column(name, fallback_name):
 def ret_lol(row_num_list):
     # print(row_num_list)
     ret_list = []
+    row = []
     for x in row_num_list:
         for y in range(len(master_fields)):
-            ret_list.append(all_spreadsheets[y][x])
-    
+            row.append(all_spreadsheets[y][x])
+        ret_list.append(row)
     # print(ret_list)
     return ret_list
 
 
 def output_csv_by_1stCategory():
 
+    # List of Lists [[list of rows in city 1], [list of rows in city 2], ... [list of rows in city n]]
     cat_list = []
 
     # Determine column number of "1stCategory" for sorting.
@@ -114,18 +116,25 @@ def output_csv_by_1stCategory():
     keys = sorting_dict.keys()
     for key in keys:
         cat_list.append(sorting_dict[key])
-        # new_list = [x for x in cat_list if firstCat_col == ]
 
     # Create a dictionary for every city using 1stCat as the key.
+    #for every city in cat_list
     cat_dict = {}
+    # for all rows in each city
     for sort_dict_rowval in cat_list[9]:
-        key_val = all_spreadsheets[firstCat_col][sort_dict_rowval]
+        key_val = all_spreadsheets[firstCat_col][sort_dict_rowval] # fetch a profession in cat_list
+        # if profession is not in cat_dict, add it.
         if key_val not in cat_dict:
             cat_dict[key_val] = []
+        # Add row number to a city's profession dictionary key (e.g. if Detroit has a Carpenter, add which row it can be found on)
         cat_dict[key_val].append(sort_dict_rowval)
+    # for all professions in the city
     for keys in cat_dict:
         # print(cat_dict[keys])
-        csv_lol = ret_lol(cat_dict[keys])
+        csv_lol = ret_lol(cat_dict[keys]) # fetch row data for each profession, return a list of rows.
+        #write csv file
+        print(csv_lol)
+        print('######################################')
 
 
 
