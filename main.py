@@ -26,6 +26,8 @@ all_spreadsheets = []
 
 sorting_dict = {}
 
+output_dir = "output\\"
+
 def merge_data(fields, rows):
 
     row_count = len(rows) # get total rows in current sheet
@@ -101,6 +103,18 @@ def ret_lol(row_num_list):
     # print(ret_list)
     return ret_list
 
+def write_to_csv(filename, rows):
+    # writing to csv file 
+    with open(filename, 'w', newline='') as csvfile:
+        # creating a csv writer object 
+        csvwriter = csv.writer(csvfile) 
+        
+        # writing the fields 
+        csvwriter.writerow(master_fields) 
+        
+        # writing the data rows 
+        csvwriter.writerows(rows)
+
 
 def output_csv_by_1stCategory():
 
@@ -133,11 +147,15 @@ def output_csv_by_1stCategory():
         # print(cat_dict[keys])
         csv_lol = ret_lol(cat_dict[keys]) # fetch row data for each profession, return a list of rows.
         profession = csv_lol[0][firstCat_col]
-        profession_count = str(f'{len(csv_lol):03d}')
-        #write csv file
-        print(csv_lol)
-        print(profession)
-        print(profession_count)
+        profession_count = str(f'{(len(csv_lol)):03d}')
+        profession_city = csv_lol[0][4] # Extracts city from State/Region column. magic number - will fix later
+        # print(csv_lol)
+        # print(profession)
+        # print(profession_count)
+        # print(profession_city)
+        filename = output_dir + profession + ' ' + profession_city + ' ' + profession_count + '.csv'
+        print(filename)
+        write_to_csv(filename, csv_lol)
         print('##############################################################')
 
 
