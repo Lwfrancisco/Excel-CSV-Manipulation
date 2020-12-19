@@ -28,7 +28,7 @@ sorting_dict = {}
 
 def merge_data(fields, rows):
 
-    row_count = len(rows[0]) # get total rows in current sheet
+    row_count = len(rows) # get total rows in current sheet
     # for every column in master sheet
     for m_field_num in range(len(master_fields)):
         m_field = master_fields[m_field_num]
@@ -46,6 +46,16 @@ def merge_data(fields, rows):
         elif col_num < 0:
             for x in range(row_count):
                 all_spreadsheets[m_field_num].append('')
+
+    # temp_list = []
+    # temp_list.append(master_fields)
+    # for m_col in range(len(master_fields)):
+    #     col_num
+
+    
+    # print(len(all_spreadsheets))
+
+    
 
 def categorize_by_column(name, fallback_name):
     # Determine column number of "column_name" for sorting.
@@ -80,13 +90,15 @@ def categorize_by_column(name, fallback_name):
 
     # print(sorting_dict)
 
-def ret_lol(row_list):
-    # ret_list = []
-    # for x in row_list:
-    #     for y in range(len(master_fields)):
-    #         print(y)
-    #         print(all_spreadsheets[y][x])
+def ret_lol(row_num_list):
+    # print(row_num_list)
+    ret_list = []
+    for x in row_num_list:
+        for y in range(len(master_fields)):
+            ret_list.append(all_spreadsheets[y][x])
+    
     # print(ret_list)
+    return ret_list
 
 
 def output_csv_by_1stCategory():
@@ -113,7 +125,7 @@ def output_csv_by_1stCategory():
         cat_dict[key_val].append(sort_dict_rowval)
     for keys in cat_dict:
         # print(cat_dict[keys])
-        ret_lol(cat_dict[keys])
+        csv_lol = ret_lol(cat_dict[keys])
 
 
 
@@ -179,8 +191,8 @@ class Process(Button):
         categorize_by_column("State/Region", "City")
 
         # Output CSVs
-        # output_csv_by_1stCategory()
-        ret_lol([1])
+        output_csv_by_1stCategory()
+        # ret_lol([200])
 
         # get total number of rows
         print("Total no. of rows: %d"%(len(all_spreadsheets[0])))
