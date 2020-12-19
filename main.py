@@ -224,10 +224,10 @@ class Process(Button):
         print("Total no. of rows: %d"%(len(all_spreadsheets[0])))
 
 ########## add some sort of toast ###############
-        exit()
+        sys.exit()
 
 
-class ChooserApp(App):
+class CSV_ManipulatorApp(App):
     '''
     Application class with root built in KV.
     '''
@@ -242,7 +242,8 @@ class ChooserApp(App):
                 orientation: 'vertical'
                 Label:
                     size_hint_y: 0.05
-                    text: 'First, please select the files you wish to process. Then hit the process button. Files will be stored in Desktop/CSV_Manipulator'
+                    text: 'First, please select files one at a time, then hit process after selecting all files to be processed.\\nOutput will be stored in Desktop/CSV_Manipulator. CVS_Manipulator will exit on completion'
+                    valign: 'middle'
                 Process:
                     size_hint_y: 0.1
                     text: 'Process'
@@ -276,4 +277,4 @@ if __name__ == '__main__':
             all_spreadsheets.append([fields])
 
     # run kivy app
-    ChooserApp().run()
+    CSV_ManipulatorApp().run()
