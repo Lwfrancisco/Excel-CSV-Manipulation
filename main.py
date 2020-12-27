@@ -16,6 +16,8 @@ from kivy.properties import ListProperty
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 
+from datetime import datetime
+
 # for csv
 import csv
 
@@ -47,7 +49,7 @@ def merge_data(fields, rows):
                 all_spreadsheets[m_field_num].append(row[col_num])
         # if match was not found, append empty strings.
         elif col_num < 0:
-            for x in range(row_count):
+            for _ in range(row_count): # As no variable is being used _ serves as a stand in.
                 all_spreadsheets[m_field_num].append('')
 
     
@@ -94,9 +96,8 @@ def ret_lol(row_num_list):
     # print(ret_list)
     return ret_list
 
-def write_to_csv(filename, rows):
-    directory = os.path.join(desktop, output_dir)
-    filepath = os.path.join(directory, filename)
+def write_to_csv(filename, dir_name, rows):
+    filepath = os.path.join(dir_name, filename)
 
     # writing to csv file 
     with open(filepath, 'w', newline='') as csvfile:
@@ -111,6 +112,16 @@ def write_to_csv(filename, rows):
 
 
 def output_csv_by_1stCategory():
+
+    # Make new directory for file
+    now = datetime.now()
+    dt_string = now.strftime("%d-%m-%Y %Hh%Mm%Ss")
+    directory = os.path.join(desktop, output_dir) # Desktop/CSV_Manipulator
+    new_dir = os.path.join(directory, dt_string) # Desktop/CSV_Manipulator/datetime
+
+    # if new_dir doesn't exist, make it.
+    if not os.path.isdir(new_dir):
+        os.mkdir(new_dir)
 
     # List of Lists [[list of rows in city 1], [list of rows in city 2], ... [list of rows in city n]]
     cat_list = []
@@ -151,7 +162,7 @@ def output_csv_by_1stCategory():
             # print(profession_count)
             # print(profession_city)
             filename = profession + ' ' + profession_city + ' ' + profession_count + '.csv'
-            write_to_csv(filename, csv_lol)
+            write_to_csv(filename, new_dir, csv_lol)
 
 
 
@@ -260,7 +271,7 @@ if __name__ == '__main__':
     if hasattr(sys, '_MEIPASS'):
         resource_add_path(os.path.join(sys._MEIPASS))
 
-    path = os.path.join(desktop, output_dir) 
+    path = os.path.join(desktop, output_dir)
     if not os.path.isdir(path):
         os.mkdir(path)
 
