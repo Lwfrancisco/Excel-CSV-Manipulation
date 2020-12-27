@@ -30,6 +30,7 @@ sorting_dict = {}
 
 desktop = os.path.expanduser("~/Desktop")
 output_dir = "CSV_Manipulator"
+custom_dir = ''
 
 def merge_data(fields, rows):
 
@@ -116,8 +117,11 @@ def output_csv_by_1stCategory():
     # Make new directory for file
     now = datetime.now()
     dt_string = now.strftime("%d-%m-%Y %Hh%Mm%Ss")
-    directory = os.path.join(desktop, output_dir) # Desktop/CSV_Manipulator
-    new_dir = os.path.join(directory, dt_string) # Desktop/CSV_Manipulator/datetime
+    if custom_dir != '': # if a folder was selected.
+        new_dir = os.path.join(custom_dir, dt_string)
+    else:
+        directory = os.path.join(desktop, output_dir) # Desktop/CSV_Manipulator
+        new_dir = os.path.join(directory, dt_string) # Desktop/CSV_Manipulator/datetime
 
     # if new_dir doesn't exist, make it.
     if not os.path.isdir(new_dir):
@@ -237,6 +241,27 @@ class Process(Button):
 ########## add some sort of toast ###############
         sys.exit()
 
+class FolderChoose(Button):
+    '''
+    Button that triggers 'filechooser.choose_dir()' and changes the save folder accordingly.
+    '''
+
+    def selectFolder(self):
+        '''
+        Call plyer directory chooser
+        '''
+        filechooser.choose_dir(on_selection=self.handle_selection)
+
+    def handle_selection(self, selection):
+        '''
+        Callback function for handling the selection response from Activity.
+        '''
+        global custom_dir # needed to modify global custom_dir
+        self.selection = selection
+        dir = selection[0]
+        self.text = 'Save results to ' + dir
+        custom_dir = dir
+
 
 class CSV_ManipulatorApp(App):
     '''
@@ -253,12 +278,17 @@ class CSV_ManipulatorApp(App):
                 orientation: 'vertical'
                 Label:
                     size_hint_y: 0.05
-                    text: 'First, please select files one at a time, then hit process after selecting all files to be processed.\\nOutput will be stored in Desktop/CSV_Manipulator. CVS_Manipulator will exit on completion'
+                    text: 'First, please select files one at a time, then hit process after selecting all files to be processed.\\nOutput will be stored in Desktop/CSV_Manipulator by default. CVS_Manipulator will exit on completion'
                     valign: 'middle'
                 Process:
                     size_hint_y: 0.1
                     text: 'Process'
                     on_release: self.process()
+                FolderChoose:
+                    id: folder
+                    size_hint_y: 0.1
+                    text: 'Save results to Desktop/CSV_Manipulator (default)'
+                    on_release: self.selectFolder()
                 FileChoose:
                     size_hint_y: 0.1
                     on_release: self.choose()
