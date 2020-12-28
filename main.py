@@ -33,7 +33,13 @@ desktop = os.path.expanduser("~/Desktop")
 output_dir = "CSV_Manipulator"
 custom_dir = ''
 
-def merge_data(fields, rows):
+label_list = []
+
+merge_list = []
+merge_csv_files = []
+all_merged_sheets = []
+
+def merge_data(fields, rows, target_spreadsheet):
 
     row_count = len(rows) # get total rows in current sheet
     # for every column in master sheet
@@ -48,14 +54,14 @@ def merge_data(fields, rows):
         # if match was found, append all rows in column.
         if col_num >= 0:
             for row in rows:
-                all_spreadsheets[m_field_num].append(row[col_num])
+                target_spreadsheet[m_field_num].append(row[col_num])
         # if match was not found, append empty strings.
         elif col_num < 0:
             for _ in range(row_count): # As no variable is being used _ serves as a stand in.
-                all_spreadsheets[m_field_num].append('')
+                target_spreadsheet[m_field_num].append('')
 
     
-    # print(len(all_spreadsheets))
+    # print(len(target_spreadsheet))
 
     
 
@@ -115,6 +121,8 @@ def write_to_csv(filename, dir_name, rows):
 
 def output_csv_by_1stCategory():
 
+    global last_dir_name
+
     # Make new directory for file
     now = datetime.now()
     dt_string = now.strftime("%d-%m-%Y %Hh%Mm%Ss")
@@ -127,6 +135,8 @@ def output_csv_by_1stCategory():
     # if new_dir doesn't exist, make it.
     if not os.path.isdir(new_dir):
         os.mkdir(new_dir)
+
+    last_dir_name = new_dir
 
     # List of Lists [[list of rows in city 1], [list of rows in city 2], ... [list of rows in city n]]
     cat_list = []
@@ -196,9 +206,15 @@ class FileChoose(Button):
         Update TextInput.text after FileChoose.selection is changed
         via FileChoose.handle_selection.
         '''
-        selection_text = self.selection[0]
+        global label_list
+
+        selection_text = self.selection[0] # pick the filepath out of the selection list
+        label = Label(text=str(selection_text), size_hint_y=str(0.1), halign='left', valign='top', text_size=self.size) # create label reference
         # App.get_running_app().root.ids.result.text = str(self.selection)
-        App.get_running_app().root.ids.stack_widget.add_widget(Label(text=str(selection_text), size_hint_y=str(0.1), halign='left'))
+        App.get_running_app().root.ids.stack_widget.add_widget(label) # add label to UI
+        label_list.append(label) # add label reference to list - used for manipulation and deletion later.
+
+        #! fix this sometime to work with just selection_text rather than the list itself.
         csv_files.append(str(self.selection))
 
 class Process(Button):
@@ -227,7 +243,7 @@ class Process(Button):
                     rows.append(row)
 
                 # Some spreadsheets may have a limited number of columns. Insert specifically.
-                merge_data(fields, rows)
+                merge_data(fields, rows, all_spreadsheets)
         # end of input files loop
 
         # Separate the data into dictionary based on city (which happens to be in the State/Region column instead of City).
@@ -264,6 +280,80 @@ class FolderChoose(Button):
         self.text = 'Save Folder Selected: ' + dir
         custom_dir = dir
 
+class MergeFileChoose(Button):
+    '''
+    Button that triggers 'filechooser.open_file()' and processes
+    the data response from filechooser Activity.
+    '''
+
+    selection = ListProperty([])
+
+    def choose(self):
+        '''
+        Call plyer filechooser API to run a filechooser Activity.
+        '''
+        filechooser.open_file(on_selection=self.handle_selection)
+
+    def handle_selection(self, selection):
+        '''
+        Callback function for handling the selection response from Activity.
+        '''
+        self.selection = selection
+
+    def on_selection(self, *a, **k):
+        '''
+        Update TextInput.text after FileChoose.selection is changed
+        via FileChoose.handle_selection.
+        '''
+        global merge_list
+
+        selection_text = self.selection[0] # pick the filepath out of the selection list
+        label = Label(text=str(selection_text), size_hint_y=str(0.1), halign='left', valign='top', text_size=self.size) # create label reference
+        # App.get_running_app().root.ids.result.text = str(self.selection)
+        App.get_running_app().root.ids.merge_widget.add_widget(label) # add label to UI
+        merge_list.append(label) # add label reference to list - used for manipulation and deletion later.
+
+        #! fix this sometime to work with just selection_text rather than the list itself.
+        merge_csv_files.append(str(self.selection))
+
+class Merge(Button):
+    '''
+    Button that triggers the merging of selected csv files.
+    '''
+
+    def merge(self):
+        # print(csv_files)
+
+        # reading csv file 
+        for file in merge_csv_files:
+            loc = file[2:-2] # removes the first/last two characters from ['filename.extension'] to filename.extension
+
+            fields = []
+            rows = []
+
+            with open(loc, 'r') as csvfile:
+                # creating a csv reader object 
+                csvreader = csv.reader(csvfile)
+
+                fields = next(csvreader)
+            
+                # extracting each data row one by one
+                for row in csvreader:
+                    rows.append(row)
+
+                # Some spreadsheets may have a limited number of columns. Insert specifically.
+                merge_data(fields, rows, all_merged_sheets)
+        # end of input files loop
+
+        # Separate the data into dictionary based on city (which happens to be in the State/Region column instead of City).
+        # categorize_by_column("State/Region", "City")
+
+        # Output CSVs
+        # output_csv_by_1stCategory()
+
+        # get total number of rows
+        print("Total no. of rows: %d"%(len(all_merged_sheets[0])))
+
 
 class CSV_ManipulatorApp(App):
     '''
@@ -272,68 +362,93 @@ class CSV_ManipulatorApp(App):
 
     def build(self):
         return Builder.load_string(dedent('''
-            GridLayout:
-                cols: 1
-                Label:
-                    size_hint_y: 0.1
-                    # text: 'First, please select files one at a time, then hit process after selecting all files to be processed.\\nOutput will be stored in Desktop/CSV_Manipulator by default. CVS_Manipulator will exit on completion'
-                    text: 'CSV Manipulator'
-                    font_size: '48sp'
-                    valign: 'middle'
-                Process:
-                    size_hint_y: 0.1
-                    text: 'Process'
-                    background_color: 0, 0, 1, 200
-                    on_release: self.process()
+            TabbedPanel:
+                tab_pos: "top_right"
+                default_tab_text: "Process"
+                default_tab_content: processing_tab
+                TabbedPanelItem:
+                    text: 'Merge'
+                    content: merging_tab
+                # Processing Tab Content
                 GridLayout:
-                    cols: 2
+                    id: processing_tab
+                    cols: 1
+                    Label:
+                        size_hint_y: 0.1
+                        # text: 'First, please select files one at a time, then hit process after selecting all files to be processed.\\nOutput will be stored in Desktop/CSV_Manipulator by default. CVS_Manipulator will exit on completion'
+                        text: 'CSV Manipulator'
+                        font_size: '48sp'
+                        valign: 'middle'
+                    Process:
+                        size_hint_y: 0.1
+                        text: 'Process'
+                        background_color: 0, 0, 1, 200
+                        on_release: self.process()
+                    FolderChoose:
+                        id: folder
+                        size_hint_y: 0.1
+                        text: 'Save Folder Selected: Desktop/CSV_Manipulator (default)'
+                        on_release: self.selectFolder()
+                    FileChoose:
+                        size_hint_y: 0.1
+                        on_release: self.choose()
+                        text: 'Insert a file'
+                    GridLayout:
+                        cols: 1
+                        id: stack_widget
+                        padding: 0,0
+                        size_hint_y: 0.3
+                        Label:
+                            text: 'Files inserted:'
+                            halign: 'left'
+                            valign: 'top'
+                            size_hint_y: 0.1
+                            text_size: self.size
+                # Merging Tab Content
+                GridLayout:
+                    id: merging_tab
+                    cols: 1
                     padding: 5,5
-                    size_hint_y: 0.2
-                    TextInput:
-                        id: merge1
-                        text: 'Merge Name 1'
-                        multiline: False
-                        size_hint_y: 0.3
-                    TextInput:
-                        id: merge2
-                        text: 'Merge Name 2'
-                        multiline: False
-                        size_hint_y: 0.3
+                    canvas:
+                        Color:
+                            rgba: 37/255., 39/255., 30/255., 1
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
                     GridLayout:
                         cols: 2
-                        padding: 10,10
-                        size_hint_y: 0.7
-                        Label:
+                        size_hint_y: 0.08
+                        TextInput:
+                            id: merge_category
                             text: 'Category'
-                        Label:
+                            multiline: False
+                            size_hint_y: 0.2
+                        TextInput:
+                            id: merge_city
                             text: 'City'
-                        CheckBox:
-                            group: type
-                        CheckBox:
-                            group: type
-                    Button:
+                            multiline: False
+                            size_hint_y: 0.2
+                    MergeFileChoose:
+                        size_hint_y: 0.2
+                        on_release: self.choose()
+                        text: 'Insert a file'
+                    Merge:
                         text: 'Merge'
-                        size_hint_y: 0.7
-                FolderChoose:
-                    id: folder
-                    size_hint_y: 0.1
-                    text: 'Save Folder Selected: Desktop/CSV_Manipulator (default)'
-                    on_release: self.selectFolder()
-                FileChoose:
-                    size_hint_y: 0.1
-                    on_release: self.choose()
-                    text: 'Insert a file'
-                Label:
-                    text: 'Files inserted:'
-                    halign: 'left'
-                    valign: 'top'
-                    size_hint_y: 0.1
-                    text_size: self.size
-                StackLayout:
-                    id: stack_widget
-                    size_hint_y: 0.3
+                        size_hint_y: 0.2
+                        background_color: 1, 0, 0, 200
+                        on_release: self.merge()
+                    GridLayout:
+                        cols: 1
+                        id: merge_widget
+                        padding: 0,0
+                        # size_hint_y: 0.3
+                        Label:
+                            text: 'Files merging:'
+                            halign: 'left'
+                            valign: 'top'
+                            size_hint_y: 0.1
+                            text_size: self.size
         '''))
-
 
 if __name__ == '__main__':
     # for bundling data with this kivy app for windows
@@ -355,6 +470,7 @@ if __name__ == '__main__':
         
         for fields in master_fields:
             all_spreadsheets.append([fields])
+            all_merged_sheets.append([fields])
 
     # run kivy app
     CSV_ManipulatorApp().run()
