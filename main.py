@@ -38,6 +38,7 @@ label_list = []
 merge_list = []
 merge_csv_files = []
 all_merged_sheets = []
+merge_custom_dir = ''
 
 def merge_data(fields, rows, target_spreadsheet):
 
@@ -93,13 +94,13 @@ def categorize_by_column(name, fallback_name):
 
     # print(sorting_dict)
 
-def ret_lol(row_num_list):
+def ret_lol(row_num_list, target_spreadsheet):
     # print(row_num_list)
     ret_list = []
     for x in row_num_list:
         row = []
         for y in range(len(master_fields)):
-            row.append(all_spreadsheets[y][x])
+            row.append(target_spreadsheet[y][x])
         ret_list.append(row)
     # print(ret_list)
     return ret_list
@@ -165,7 +166,7 @@ def output_csv_by_1stCategory():
         # for all professions in the city
         for keys in cat_dict:
             # print(cat_dict[keys])
-            csv_lol = ret_lol(cat_dict[keys]) # fetch row data for each profession, return a list of rows.
+            csv_lol = ret_lol(cat_dict[keys], all_spreadsheets) # fetch row data for each profession, return a list of rows.
             profession = csv_lol[0][firstCat_col]
             profession_count = str(f'{(len(csv_lol)):03d}')
             profession_city = csv_lol[0][4] # Extracts city from State/Region column. magic number - will fix later
@@ -251,7 +252,7 @@ class Process(Button):
 
         # Output CSVs
         output_csv_by_1stCategory()
-        # ret_lol([200])
+        # ret_lol([200], all_spreadsheets)
 
         # get total number of rows
         print("Total no. of rows: %d"%(len(all_spreadsheets[0])))
@@ -279,6 +280,20 @@ class FolderChoose(Button):
         dir = selection[0]
         self.text = 'Save Folder Selected: ' + dir
         custom_dir = dir
+
+def replace_column_data(category, city, target_spreadsheet):
+    # column 4 is city, 37 for category. Un-magic number this at some point
+    city_col = 4
+    cat_col = 37
+    print(target_spreadsheet[cat_col])
+    if category != '':
+        for i in range(len(target_spreadsheet[cat_col]) - 1):
+            target_spreadsheet[cat_col][i+1] = category
+    if city != '':
+        for i in range(len(target_spreadsheet[city_col]) - 1):
+            target_spreadsheet[city_col][i+1] = city
+    print(target_spreadsheet[cat_col])
+
 
 class MergeFileChoose(Button):
     '''
@@ -316,6 +331,27 @@ class MergeFileChoose(Button):
         #! fix this sometime to work with just selection_text rather than the list itself.
         merge_csv_files.append(str(self.selection))
 
+class MergeFolderChoose(Button):
+    '''
+    Button that triggers 'filechooser.choose_dir()' and changes the save folder accordingly.
+    '''
+
+    def selectFolder(self):
+        '''
+        Call plyer directory chooser
+        '''
+        filechooser.choose_dir(on_selection=self.handle_selection)
+
+    def handle_selection(self, selection):
+        '''
+        Callback function for handling the selection response from Activity.
+        '''
+        global merge_custom_dir # needed to modify global merge_custom_dir
+        self.selection = selection
+        dir = selection[0]
+        self.text = 'Save Folder Selected: ' + dir
+        merge_custom_dir = dir
+
 class Merge(Button):
     '''
     Button that triggers the merging of selected csv files.
@@ -345,11 +381,20 @@ class Merge(Button):
                 merge_data(fields, rows, all_merged_sheets)
         # end of input files loop
 
-        # Separate the data into dictionary based on city (which happens to be in the State/Region column instead of City).
-        # categorize_by_column("State/Region", "City")
+        # Change column data
+        merge_cat_input = App.get_running_app().root.ids.merge_category.text # obtain text from textbox
+        merge_city_input = App.get_running_app().root.ids.merge_city.text # obtain text from textbox
+        replace_column_data(merge_cat_input, merge_city_input, all_merged_sheets)
 
-        # Output CSVs
-        # output_csv_by_1stCategory()
+        merge_length = len(all_merged_sheets[0])
+
+        # Get list of lists to output csv
+        merge_csv_lol = ret_lol([i for i in range(merge_length)], all_merged_sheets) # first argument: generates int list from 0 to range. Second argument: target spreadsheet list.
+
+        # Create filename
+
+        # Write to CSVs
+        # write_to_csv(filename, last_dir_name, merge_csv_lol)
 
         # get total number of rows
         print("Total no. of rows: %d"%(len(all_merged_sheets[0])))
@@ -417,17 +462,21 @@ class CSV_ManipulatorApp(App):
                             size: self.size
                     GridLayout:
                         cols: 2
-                        size_hint_y: 0.08
+                        size_hint_y: 0.2
+                        Label:
+                            text: 'Category'
+                            size_hint_y: 0.5
+                        Label:
+                            text: 'City'
+                            size_hint_y: 0.5
                         TextInput:
                             id: merge_category
-                            text: 'Category'
                             multiline: False
-                            size_hint_y: 0.2
+                            size_hint_y: 0.5
                         TextInput:
                             id: merge_city
-                            text: 'City'
                             multiline: False
-                            size_hint_y: 0.2
+                            size_hint_y: 0.5
                     MergeFileChoose:
                         size_hint_y: 0.2
                         on_release: self.choose()
