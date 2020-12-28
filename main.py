@@ -15,6 +15,7 @@ from kivy.lang import Builder
 from kivy.properties import ListProperty
 from kivy.uix.button import Button
 from kivy.uix.label import Label
+from kivy.uix.stacklayout import StackLayout
 
 from datetime import datetime
 
@@ -195,8 +196,9 @@ class FileChoose(Button):
         Update TextInput.text after FileChoose.selection is changed
         via FileChoose.handle_selection.
         '''
+        selection_text = self.selection[0]
         # App.get_running_app().root.ids.result.text = str(self.selection)
-        App.get_running_app().root.add_widget(Label(text=str(self.selection), size_hint_y=str(0.05)))
+        App.get_running_app().root.ids.stack_widget.add_widget(Label(text=str(selection_text), size_hint_y=str(0.1), halign='left'))
         csv_files.append(str(self.selection))
 
 class Process(Button):
@@ -259,7 +261,7 @@ class FolderChoose(Button):
         global custom_dir # needed to modify global custom_dir
         self.selection = selection
         dir = selection[0]
-        self.text = 'Save results to ' + dir
+        self.text = 'Save Folder Selected: ' + dir
         custom_dir = dir
 
 
@@ -270,29 +272,66 @@ class CSV_ManipulatorApp(App):
 
     def build(self):
         return Builder.load_string(dedent('''
-            <FileChoose>:
-            # BoxLayout:
-            #     BoxLayout:
-            #         orientation: 'vertical'
-            BoxLayout:
-                orientation: 'vertical'
+            GridLayout:
+                cols: 1
                 Label:
-                    size_hint_y: 0.05
-                    text: 'First, please select files one at a time, then hit process after selecting all files to be processed.\\nOutput will be stored in Desktop/CSV_Manipulator by default. CVS_Manipulator will exit on completion'
+                    size_hint_y: 0.1
+                    # text: 'First, please select files one at a time, then hit process after selecting all files to be processed.\\nOutput will be stored in Desktop/CSV_Manipulator by default. CVS_Manipulator will exit on completion'
+                    text: 'CSV Manipulator'
+                    font_size: '48sp'
                     valign: 'middle'
                 Process:
                     size_hint_y: 0.1
                     text: 'Process'
+                    background_color: 0, 0, 1, 200
                     on_release: self.process()
+                GridLayout:
+                    cols: 2
+                    padding: 5,5
+                    size_hint_y: 0.2
+                    TextInput:
+                        id: merge1
+                        text: 'Merge Name 1'
+                        multiline: False
+                        size_hint_y: 0.3
+                    TextInput:
+                        id: merge2
+                        text: 'Merge Name 2'
+                        multiline: False
+                        size_hint_y: 0.3
+                    GridLayout:
+                        cols: 2
+                        padding: 10,10
+                        size_hint_y: 0.7
+                        Label:
+                            text: 'Category'
+                        Label:
+                            text: 'City'
+                        CheckBox:
+                            group: type
+                        CheckBox:
+                            group: type
+                    Button:
+                        text: 'Merge'
+                        size_hint_y: 0.7
                 FolderChoose:
                     id: folder
                     size_hint_y: 0.1
-                    text: 'Save results to Desktop/CSV_Manipulator (default)'
+                    text: 'Save Folder Selected: Desktop/CSV_Manipulator (default)'
                     on_release: self.selectFolder()
                 FileChoose:
                     size_hint_y: 0.1
                     on_release: self.choose()
-                    text: 'Select a file'
+                    text: 'Insert a file'
+                Label:
+                    text: 'Files inserted:'
+                    halign: 'left'
+                    valign: 'top'
+                    size_hint_y: 0.1
+                    text_size: self.size
+                StackLayout:
+                    id: stack_widget
+                    size_hint_y: 0.3
         '''))
 
 
