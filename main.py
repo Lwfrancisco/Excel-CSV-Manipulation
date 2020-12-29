@@ -228,6 +228,7 @@ class Process(Button):
         global all_spreadsheets
         global sorting_dict
         global label_list
+        global csv_files
 
         # reading csv file 
         for file in csv_files:
@@ -264,10 +265,12 @@ class Process(Button):
 
         # Reset for next run
         all_spreadsheets = []
+        csv_files = []
         sorting_dict = {}
         for fields in master_fields:
             all_spreadsheets.append([fields])
-        # clear label_list manually
+        for label_widget in label_list:
+            App.get_running_app().root.ids.stack_widget.remove_widget(label_widget)
 
 ########## add some sort of toast ###############
         # sys.exit()
@@ -452,7 +455,8 @@ class Merge(Button):
 
         # Reset for next run
         merge_csv_files = []
-        #delete merged_label_list labels.
+        for label_widget in merge_label_list:
+            App.get_running_app().root.ids.merge_widget.remove_widget(label_widget)
         all_merged_sheets = []
         for fields in master_fields:
             all_merged_sheets.append([fields])
