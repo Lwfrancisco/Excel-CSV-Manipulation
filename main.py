@@ -209,14 +209,15 @@ class FileChoose(Button):
         '''
         global label_list
 
-        selection_text = self.selection[0] # pick the filepath out of the selection list
-        label = Label(text=str(selection_text), size_hint_y=str(0.1), halign='left', valign='top', text_size=self.size) # create label reference
-        # App.get_running_app().root.ids.result.text = str(self.selection)
-        App.get_running_app().root.ids.stack_widget.add_widget(label) # add label to UI
-        label_list.append(label) # add label reference to list - used for manipulation and deletion later.
+        if self.selection:
+            selection_text = self.selection[0] # pick the filepath out of the selection list
+            label = Label(text=str(selection_text), size_hint_y=str(0.1), halign='left', valign='top', text_size=self.size) # create label reference
+            # App.get_running_app().root.ids.result.text = str(self.selection)
+            App.get_running_app().root.ids.stack_widget.add_widget(label) # add label to UI
+            label_list.append(label) # add label reference to list - used for manipulation and deletion later.
 
-        #! fix this sometime to work with just selection_text rather than the list itself.
-        csv_files.append(str(self.selection))
+            #! fix this sometime to work with just selection_text rather than the list itself.
+            csv_files.append(str(self.selection))
 
 class Process(Button):
     '''
@@ -279,9 +280,10 @@ class FolderChoose(Button):
         '''
         global custom_dir # needed to modify global custom_dir
         self.selection = selection
-        dir = selection[0]
-        self.text = 'Save Folder Selected: ' + dir
-        custom_dir = dir
+        if selection:
+            dir = selection[0]
+            self.text = 'Save Folder Selected: ' + dir
+            custom_dir = dir
 
 def replace_column_data(col_num, data_substitute, target_spreadsheet):
     '''
@@ -318,14 +320,15 @@ class MergeFileChoose(Button):
         '''
         global merge_list
 
-        selection_text = self.selection[0] # pick the filepath out of the selection list
-        label = Label(text=str(selection_text), size_hint_y=str(0.1), halign='left', valign='top', text_size=self.size) # create label reference
-        # App.get_running_app().root.ids.result.text = str(self.selection)
-        App.get_running_app().root.ids.merge_widget.add_widget(label) # add label to UI
-        merge_list.append(label) # add label reference to list - used for manipulation and deletion later.
+        if self.selection:
+            selection_text = self.selection[0] # pick the filepath out of the selection list
+            label = Label(text=str(selection_text), size_hint_y=str(0.1), halign='left', valign='top', text_size=self.size) # create label reference
+            # App.get_running_app().root.ids.result.text = str(self.selection)
+            App.get_running_app().root.ids.merge_widget.add_widget(label) # add label to UI
+            merge_list.append(label) # add label reference to list - used for manipulation and deletion later.
 
-        #! fix this sometime to work with just selection_text rather than the list itself.
-        merge_csv_files.append(str(self.selection))
+            #! fix this sometime to work with just selection_text rather than the list itself.
+            merge_csv_files.append(str(self.selection))
 
 class MergeFolderChoose(Button):
     '''
@@ -344,9 +347,10 @@ class MergeFolderChoose(Button):
         '''
         global merge_custom_dir # needed to modify global merge_custom_dir
         self.selection = selection
-        dir = selection[0]
-        self.text = 'Save Folder Selected: ' + dir
-        merge_custom_dir = dir
+        if selection:
+            dir = selection[0]
+            self.text = 'Save Folder Selected: ' + dir
+            merge_custom_dir = dir
 
 class Merge(Button):
     '''
