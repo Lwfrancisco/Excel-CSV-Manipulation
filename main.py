@@ -230,6 +230,10 @@ class Process(Button):
         global label_list
         global csv_files
 
+        # if no files were added, do nothing.
+        if not csv_files:
+            return
+
         # reading csv file 
         for file in csv_files:
             loc = file[2:-2] # removes the first/last two characters from ['filename.extension'] to filename.extension
@@ -271,6 +275,7 @@ class Process(Button):
             all_spreadsheets.append([fields])
         for label_widget in label_list:
             App.get_running_app().root.ids.stack_widget.remove_widget(label_widget)
+        label_list = []
 
 ########## add some sort of toast ###############
         # sys.exit()
@@ -373,6 +378,7 @@ class Merge(Button):
         global merge_custom_dir # allows modification of global variable
         global all_merged_sheets
         global merge_csv_files
+        global merge_label_list
 
         # if no merged files were added, do nothing. (this fixes crash when no files are added)
         if not merge_csv_files:
@@ -457,6 +463,7 @@ class Merge(Button):
         merge_csv_files = []
         for label_widget in merge_label_list:
             App.get_running_app().root.ids.merge_widget.remove_widget(label_widget)
+        merge_label_list = []
         all_merged_sheets = []
         for fields in master_fields:
             all_merged_sheets.append([fields])
