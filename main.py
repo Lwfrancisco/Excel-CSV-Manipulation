@@ -23,21 +23,21 @@ from datetime import datetime
 import csv
 
 # required for working with csv files globally
-csv_files = []
-master_fields = []
-all_spreadsheets = []
-
-sorting_dict = {}
-
+master_fields = [] # master for the column names
 desktop = os.path.expanduser("~/Desktop")
 output_dir = "CSV_Manipulator"
+
+# Processing
+csv_files = [] # contains name of processing files
+all_spreadsheets = [] # contains all processing spreadsheet data
+sorting_dict = {} # contains info relevant to sorting later.
+label_list = []
 custom_dir = ''
 
-label_list = []
-
-merge_list = []
-merge_csv_files = []
-all_merged_sheets = []
+# Merging
+merge_label_list = [] # contains references to file labels in the UI
+merge_csv_files = [] # contains name of files for the UI
+all_merged_sheets = [] # contains merged spreadsheet data
 merge_custom_dir = ''
 
 def merge_data(fields, rows, target_spreadsheet):
@@ -225,7 +225,9 @@ class Process(Button):
     '''
 
     def process(self):
-        # print(csv_files)
+        global all_spreadsheets
+        global sorting_dict
+        global label_list
 
         # reading csv file 
         for file in csv_files:
@@ -259,6 +261,13 @@ class Process(Button):
 
         # get total number of rows
         print("Total no. of rows: %d"%(len(all_spreadsheets[0])))
+
+        # Reset for next run
+        all_spreadsheets = []
+        sorting_dict = {}
+        for fields in master_fields:
+            all_spreadsheets.append([fields])
+        # clear label_list manually
 
 ########## add some sort of toast ###############
         # sys.exit()
@@ -318,14 +327,14 @@ class MergeFileChoose(Button):
         Update TextInput.text after FileChoose.selection is changed
         via FileChoose.handle_selection.
         '''
-        global merge_list
+        global merge_label_list
 
         if self.selection:
             selection_text = self.selection[0] # pick the filepath out of the selection list
             label = Label(text=str(selection_text), size_hint_y=str(0.1), halign='left', valign='top', text_size=self.size) # create label reference
             # App.get_running_app().root.ids.result.text = str(self.selection)
             App.get_running_app().root.ids.merge_widget.add_widget(label) # add label to UI
-            merge_list.append(label) # add label reference to list - used for manipulation and deletion later.
+            merge_label_list.append(label) # add label reference to list - used for manipulation and deletion later.
 
             #! fix this sometime to work with just selection_text rather than the list itself.
             merge_csv_files.append(str(self.selection))
@@ -359,6 +368,12 @@ class Merge(Button):
 
     def merge(self):
         global merge_custom_dir # allows modification of global variable
+        global all_merged_sheets
+        global merge_csv_files
+
+        # if no merged files were added, do nothing. (this fixes crash when no files are added)
+        if not merge_csv_files:
+            return
 
         # reading csv file 
         for file in merge_csv_files:
@@ -434,6 +449,13 @@ class Merge(Button):
 
         # get total number of rows
         print("Total no. of rows: %d"%(len(all_merged_sheets[0])))
+
+        # Reset for next run
+        merge_csv_files = []
+        #delete merged_label_list labels.
+        all_merged_sheets = []
+        for fields in master_fields:
+            all_merged_sheets.append([fields])
 
 
 class CSV_ManipulatorApp(App):
