@@ -254,11 +254,13 @@ class Process(Button):
         output_csv_by_1stCategory()
         # ret_lol([200], all_spreadsheets)
 
+        App.get_running_app().root.ids.merge_folder.text = 'Save Folder Selected: ' + last_dir_name
+
         # get total number of rows
         print("Total no. of rows: %d"%(len(all_spreadsheets[0])))
 
 ########## add some sort of toast ###############
-        sys.exit()
+        # sys.exit()
 
 class FolderChoose(Button):
     '''
@@ -281,18 +283,12 @@ class FolderChoose(Button):
         self.text = 'Save Folder Selected: ' + dir
         custom_dir = dir
 
-def replace_column_data(category, city, target_spreadsheet):
-    # column 4 is city, 37 for category. Un-magic number this at some point
-    city_col = 4
-    cat_col = 37
-    print(target_spreadsheet[cat_col])
-    if category != '':
-        for i in range(len(target_spreadsheet[cat_col]) - 1):
-            target_spreadsheet[cat_col][i+1] = category
-    if city != '':
-        for i in range(len(target_spreadsheet[city_col]) - 1):
-            target_spreadsheet[city_col][i+1] = city
-    print(target_spreadsheet[cat_col])
+def replace_column_data(col_num, data_substitute, target_spreadsheet):
+    '''
+    Replace column data in a list of lists.
+    '''
+    for i in range(len(target_spreadsheet[col_num]) - 1):
+        target_spreadsheet[col_num][i+1] = data_substitute
 
 
 class MergeFileChoose(Button):
@@ -358,7 +354,7 @@ class Merge(Button):
     '''
 
     def merge(self):
-        # print(csv_files)
+        global merge_custom_dir # allows modification of global variable
 
         # reading csv file 
         for file in merge_csv_files:
@@ -381,19 +377,55 @@ class Merge(Button):
                 merge_data(fields, rows, all_merged_sheets)
         # end of input files loop
 
+        # 
         # Change column data
+        # 
         merge_cat_input = App.get_running_app().root.ids.merge_category.text # obtain text from textbox
         merge_city_input = App.get_running_app().root.ids.merge_city.text # obtain text from textbox
-        replace_column_data(merge_cat_input, merge_city_input, all_merged_sheets)
+        ## column 4 is city, 37 for category. Un-magic number this at some point
+        city_col = 4
+        backup_city_col = 3
+        cat_col = 37
+        if merge_city_input != '':
+            replace_column_data(city_col, merge_city_input, all_merged_sheets)
+        if merge_cat_input != '':
+            replace_column_data(cat_col, merge_cat_input, all_merged_sheets)
 
-        merge_length = len(all_merged_sheets[0])
+        merge_row_count = len(all_merged_sheets[0])
 
-        # Get list of lists to output csv
-        merge_csv_lol = ret_lol([i for i in range(merge_length)], all_merged_sheets) # first argument: generates int list from 0 to range. Second argument: target spreadsheet list.
+        # Get list of lists (aka list of rows) to output csv
+        merge_csv_lol = ret_lol([i for i in range(merge_row_count)], all_merged_sheets) # first argument: generates int list from 0 to range (tells ret_lol to use all rows). Second argument: target spreadsheet list.
 
+        # 
         # Create filename
+        # 
+        filename = ''
 
-        # Write to CSVs
+        if merge_city_input != '':
+            profession_city = merge_city_input
+        else:
+            profession_city = merge_csv_lol[1][city_col]
+            # to cover for the 'city is blank' case in requirements.
+            if profession_city == '':
+                profession_city = merge_csv_lol[1][backup_city_col]
+        if merge_cat_input != '':
+            profession = merge_cat_input
+        else:
+            profession = merge_csv_lol[1][cat_col]
+
+        filename = profession + ' ' + profession_city + ' ' + str(merge_row_count - 1) + '.csv'
+
+        #print(filename)
+
+        ## Write to CSVs
+
+        # determine output directory
+        '''
+        if merge_custom_dir == '' and last_dir_name == '': # if nothing was processed or 
+            merge_custom_dir = os.path.join(desktop, output_dir)
+        elif merge_custom_dir == '': # if no custom dir is chosen, default to last processed dir
+            merge_custom_dir = last_dir_name
+        '''
         # write_to_csv(filename, last_dir_name, merge_csv_lol)
 
         # get total number of rows
@@ -418,6 +450,8 @@ class CSV_ManipulatorApp(App):
                 GridLayout:
                     id: processing_tab
                     cols: 1
+                    padding: 10,10
+                    spacing: 10
                     Label:
                         size_hint_y: 0.1
                         # text: 'First, please select files one at a time, then hit process after selecting all files to be processed.\\nOutput will be stored in Desktop/CSV_Manipulator by default. CVS_Manipulator will exit on completion'
@@ -453,7 +487,8 @@ class CSV_ManipulatorApp(App):
                 GridLayout:
                     id: merging_tab
                     cols: 1
-                    padding: 5,5
+                    padding: 10,10
+                    spacing: 10
                     canvas:
                         Color:
                             rgba: 37/255., 39/255., 30/255., 1
@@ -481,6 +516,11 @@ class CSV_ManipulatorApp(App):
                         size_hint_y: 0.2
                         on_release: self.choose()
                         text: 'Insert a file'
+                    MergeFolderChoose:
+                        id: merge_folder
+                        size_hint_y: 0.1
+                        text: 'Save Folder Selected: Desktop/CSV_Manipulator (default)'
+                        on_release: self.selectFolder()
                     Merge:
                         text: 'Merge'
                         size_hint_y: 0.2
